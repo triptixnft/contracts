@@ -1,0 +1,20 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "description": "TheMasterPiece js testing",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "type": "module",
+  "author": "Creator",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/core": "^7.15.5",
+    "@babel/preset-env": "^7.15.6",
+    "@onflow/types": "^0.0.5",
+    "babel-jest": "^27.2.2",
+    "flow-js-testing": "^0.1.13",
+    "jest": "^27.2.2"
+  }
+}
