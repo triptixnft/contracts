@@ -29,7 +29,7 @@ npm start
 
 
 # Contracts
-All contracts are locates under /cadence/contracts
+All contracts are located under /cadence/contracts
 
 They have to be deployed in the following order
 
