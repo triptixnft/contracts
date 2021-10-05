@@ -4,7 +4,8 @@
   "description": "TheMasterPiece js testing",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "deploy": "node deploy.js"
   },
   "type": "module",
   "author": "Creator",
@@ -12,6 +13,7 @@
   "dependencies": {
     "@babel/core": "^7.15.5",
     "@babel/preset-env": "^7.15.6",
+    "@onflow/fcl": "^0.0.76",
     "@onflow/types": "^0.0.5",
     "babel-jest": "^27.2.2",
     "flow-js-testing": "^0.1.13",

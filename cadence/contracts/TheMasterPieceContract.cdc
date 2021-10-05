@@ -85,7 +85,7 @@ pub contract TheMasterPieceContract {
     }
 
     priv fun removeOwner(address: Address) {
-      if (self.owners[address] != nil && (self.owners[address]!).walletSize == 0 && (self.owners[address]!).saleSize == 0) {
+      if (self.owners.containsKey(address) && (self.owners[address]!).walletSize == 0 && (self.owners[address]!).saleSize == 0) {
         self.owners.remove(key: address)
       }
     }

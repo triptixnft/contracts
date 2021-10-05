@@ -25,7 +25,6 @@ Exposes functions to purchase TheMasterPixel
 import TheMasterPieceContract from 0x01
 import TheMasterPixelContract from 0x01
 import FungibleToken from 0x02
-
 pub contract TheMasterMarketContract {
 
     pub event ForSale(sectorId: UInt16, ids: [UInt32], price: UFix64)
@@ -86,23 +85,18 @@ pub contract TheMasterMarketContract {
                     "The trade market is not opened yet."
             }
 
+            TheMasterPieceContract.setSaleSize(sectorId: self.sectorId, address: (self.owner!).address, size: UInt16(self.forSale.length + tokenIDs.length))
+
             for tokenID in tokenIDs {
               self.prices[tokenID] = price
               let oldToken <- self.forSale[tokenID] <- (self.sectorsRef.borrow()!).withdraw(sectorId: self.sectorId, withdrawID: tokenID)
               destroy oldToken
             }
 
-            TheMasterPieceContract.setSaleSize(sectorId: self.sectorId, address: (self.owner!).address, size: UInt16(self.forSale.length))
-
             emit ForSale(sectorId: self.sectorId, ids: tokenIDs, price: UFix64(tokenIDs.length) * price)
         }
 
         pub fun purchase(tokenIDs: [UInt32], recipient: &AnyResource{TheMasterPixelContract.TheMasterSectorsInterface}, vaultRef: &AnyResource{FungibleToken.Provider}) {
-            // pre {
-            //     (self.forSale[tokenID] != nil && self.prices[tokenID] != nil) && (buyTokens.balance >= (self.prices[tokenID] ?? 0.0)):
-            //       "No token matching this ID for sale! or Not enough tokens to by the NFT!"
-            // }
-
             var totalPrice: UFix64 = 0.0
 
             for tokenID in tokenIDs {

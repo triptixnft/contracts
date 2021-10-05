@@ -98,9 +98,9 @@ pub contract TheMasterPixelContract {
         return self.colors[id]!
     }
 
-    pub fun removeColor(id: UInt32): UInt32? {
-        if (!self.ownedNFTs.containsKey(id)) {
-          return self.colors.remove(key: id)
+    pub fun removeColor(id: UInt32): UInt32 {
+        if (!self.ownedNFTs.containsKey(id) && self.colors.containsKey(id)) {
+          return self.colors.remove(key: id)!
         } else {
           return 0
         }
@@ -126,7 +126,7 @@ pub contract TheMasterPixelContract {
     pub fun getPixels(sectorId: UInt16) : {UInt32: UInt32}
     pub fun getIds(sectorId: UInt16) : [UInt32]
     pub fun getColor(sectorId: UInt16, id: UInt32): UInt32
-    access(account) fun removeColor(sectorId: UInt16, id: UInt32): UInt32?
+    access(account) fun removeColor(sectorId: UInt16, id: UInt32): UInt32
   }
 
   pub fun createEmptySectors(): @TheMasterSectors {
@@ -183,7 +183,7 @@ pub contract TheMasterPixelContract {
         return masterSectorRef.getColor(id: id)
     }
 
-    pub fun removeColor(sectorId: UInt16, id: UInt32): UInt32? {
+    pub fun removeColor(sectorId: UInt16, id: UInt32): UInt32 {
         let masterSectorRef: &TheMasterSector = &self.ownedSectors[sectorId] as &TheMasterSector
         return masterSectorRef.removeColor(id: id)
     }
