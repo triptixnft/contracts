@@ -4,8 +4,7 @@
   "description": "TheMasterPiece js testing",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "deploy": "node deploy.js"
+    "start": "node index.js"
   },
   "type": "module",
   "author": "Creator",

@@ -25,6 +25,7 @@ Exposes functions to purchase TheMasterPixel
 import TheMasterPieceContract from 0x01
 import TheMasterPixelContract from 0x01
 import FungibleToken from 0x02
+
 pub contract TheMasterMarketContract {
 
     pub event ForSale(sectorId: UInt16, ids: [UInt32], price: UFix64)
@@ -75,7 +76,6 @@ pub contract TheMasterMarketContract {
         access(contract) fun withdraw(tokenID: UInt32): @TheMasterPixelContract.TheMasterPixel {
             self.prices.remove(key: tokenID)
             let token <- self.forSale.remove(key: tokenID) ?? panic("The pixel you are trying to buy has been sold.")
-            TheMasterPieceContract.setSaleSize(sectorId: self.sectorId, address: (self.owner!).address, size: UInt16(self.forSale.length))
             return <-token
         }
 
@@ -99,10 +99,12 @@ pub contract TheMasterMarketContract {
         pub fun purchase(tokenIDs: [UInt32], recipient: &AnyResource{TheMasterPixelContract.TheMasterSectorsInterface}, vaultRef: &AnyResource{FungibleToken.Provider}) {
             var totalPrice: UFix64 = 0.0
 
+            TheMasterPieceContract.setSaleSize(sectorId: self.sectorId, address: (self.owner!).address, size: UInt16(self.forSale.length - tokenIDs.length))
+            let sectorRef = (self.sectorsRef.borrow()!)
+
             for tokenID in tokenIDs {
-              totalPrice = totalPrice + self.prices[tokenID]!
-              recipient.deposit(sectorId: self.sectorId, token: <-self.withdraw(tokenID: tokenID), color: (self.sectorsRef.borrow()!).removeColor(sectorId: self.sectorId, id: tokenID)!)
-              self.prices[tokenID] = nil
+              totalPrice = totalPrice + self.prices.remove(key : tokenID)!
+              recipient.deposit(sectorId: self.sectorId, token: <-self.withdraw(tokenID: tokenID), color: sectorRef.removeColor(sectorId: self.sectorId, id: tokenID)!)
             }
 
             (self.creatorVault.borrow()!).deposit(from: <- vaultRef.withdraw(amount: totalPrice * 0.025))
