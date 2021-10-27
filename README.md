@@ -1,4 +1,4 @@
-## TheMasterPiece
+# TheMasterPiece
 
 TheMasterPiece project is an 8K NFT composed of 33 177 600 pixels.
 Each pixel is an NFT storing a color and its position (X,Y)
