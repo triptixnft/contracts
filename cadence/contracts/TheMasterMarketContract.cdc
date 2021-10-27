@@ -1,4 +1,6 @@
 /**
+SPDX-FileCopyrightText: 2021 copyright 52a74d3b580cdb48eb87979860ca6efe <creator@themasterpiece.art>
+SPDX-License-Identifier: GPL-3.0-or-later
 
 ## `TheMasterMarketContract` contract
 
@@ -22,28 +24,44 @@ Exposes functions to purchase TheMasterPixel
 
 */
 
-import TheMasterPieceContract from 0x01
-import TheMasterPixelContract from 0x01
-import FungibleToken from 0x02
+import TheMasterPieceContract from "./TheMasterPieceContract.cdc"
+import TheMasterPixelContract from "./TheMasterPixelContract.cdc"
+import FungibleToken from "./FungibleToken.cdc"
 
 pub contract TheMasterMarketContract {
 
     pub event ForSale(sectorId: UInt16, ids: [UInt32], price: UFix64)
     pub event TokenPurchased(sectorId: UInt16, ids: [UInt32], price: UFix64)
 
+    // Named Paths
+    pub let CollectionStoragePath: StoragePath
+    pub let CollectionPublicPath: PublicPath
+
+
+    pub let MarketStateStoragePath: StoragePath
+    pub let MarketStatePublicPath: PublicPath
+
     pub fun createTheMasterMarket(sectorsRef: Capability<&TheMasterPixelContract.TheMasterSectors>): @TheMasterMarket {
         return <- create TheMasterMarket(sectorsRef: sectorsRef)
     }
 
     init() {
-        if (self.account.borrow<&TheMasterMarketState>(from: /storage/TheMasterMarketState) == nil) {
-          self.account.save(<- create TheMasterMarketState(), to: /storage/TheMasterMarketState)
-          self.account.link<&{TheMasterMarketStateInterface}>(/public/TheMasterMarketState, target: /storage/TheMasterMarketState)
+
+        // Set our named paths
+        self.CollectionStoragePath = /storage/TheMasterMarket
+        self.CollectionPublicPath = /public/TheMasterMarket
+
+        self.MarketStateStoragePath = /storage/TheMasterMarketState
+        self.MarketStatePublicPath = /public/TheMasterMarketState
+
+        if (self.account.borrow<&TheMasterMarketState>(from: self.MarketStateStoragePath) == nil) {
+          self.account.save(<- create TheMasterMarketState(), to: self.MarketStateStoragePath)
+          self.account.link<&{TheMasterMarketStateInterface}>(self.MarketStatePublicPath, target: self.MarketStateStoragePath)
         }
 
-        if (self.account.borrow<&TheMasterMarket>(from: /storage/TheMasterMarket) == nil) {
-          self.account.save(<-self.createTheMasterMarket(sectorsRef: self.account.getCapability<&TheMasterPixelContract.TheMasterSectors>(/private/TheMasterSectors)), to: /storage/TheMasterMarket)
-          self.account.link<&{TheMasterMarketInterface}>(/public/TheMasterMarket, target: /storage/TheMasterMarket)
+        if (self.account.borrow<&TheMasterMarket>(from: self.CollectionStoragePath) == nil) {
+          self.account.save(<-self.createTheMasterMarket(sectorsRef: self.account.getCapability<&TheMasterPixelContract.TheMasterSectors>(TheMasterPixelContract.CollectionPrivatePath)), to: self.CollectionStoragePath)
+          self.account.link<&{TheMasterMarketInterface}>(self.CollectionPublicPath, target: self.CollectionStoragePath)
         }
     }
 
@@ -55,8 +73,8 @@ pub contract TheMasterMarketContract {
     // ########################################################################################
 
     pub resource TheMasterMarketSector {
-        pub var forSale: @{UInt32: TheMasterPixelContract.TheMasterPixel}
-        pub var prices: {UInt32: UFix64}
+        priv var forSale: @{UInt32: TheMasterPixelContract.TheMasterPixel}
+        priv var prices: {UInt32: UFix64}
         pub var sectorId: UInt16
 
         access(account) let ownerVault: Capability<&AnyResource{FungibleToken.Receiver}>
@@ -134,7 +152,7 @@ pub contract TheMasterMarketContract {
     }
 
     pub resource TheMasterMarket: TheMasterMarketInterface {
-        pub var saleSectors: @{UInt16: TheMasterMarketSector}
+        priv var saleSectors: @{UInt16: TheMasterMarketSector}
 
         access(account) let ownerVault: Capability<&AnyResource{FungibleToken.Receiver}>
         access(account) let creatorVault: Capability<&AnyResource{FungibleToken.Receiver}>

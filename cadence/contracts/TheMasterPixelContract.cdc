@@ -1,4 +1,6 @@
 /**
+SPDX-FileCopyrightText: 2021 copyright 52a74d3b580cdb48eb87979860ca6efe <creator@themasterpiece.art>
+SPDX-License-Identifier: GPL-3.0-or-later
 
 ## `TheMasterPixelContract` contract
 
@@ -24,17 +26,30 @@ Exposes functions to query TheMasterPixel colors and ids owned by sector
 
 */
 
-import TheMasterPieceContract from 0x01
+import TheMasterPieceContract from "./TheMasterPieceContract.cdc"
 
 pub contract TheMasterPixelContract {
 
-  init() {
-      if (self.account.borrow<&TheMasterPixelMinter>(from: /storage/TheMasterPixelMinter) == nil && self.account.borrow<&TheMasterSectors>(from: /storage/TheMasterSectors) == nil) {
-        self.account.save(<-create TheMasterPixelMinter(), to: /storage/TheMasterPixelMinter)
+  // Named Paths
+  pub let CollectionStoragePath: StoragePath
+  pub let CollectionPublicPath: PublicPath
+  pub let CollectionPrivatePath: PrivatePath
+  pub let MinterStoragePath: StoragePath
 
-        self.account.save(<-self.createEmptySectors(), to: /storage/TheMasterSectors)
-        self.account.link<&{TheMasterSectorsInterface}>(/public/TheMasterSectors, target: /storage/TheMasterSectors)
-        self.account.link<&TheMasterSectors>(/private/TheMasterSectors, target: /storage/TheMasterSectors)
+
+  init() {
+      // Set our named paths
+      self.CollectionStoragePath = /storage/TheMasterSectors
+      self.CollectionPublicPath = /public/TheMasterSectors
+      self.CollectionPrivatePath = /private/TheMasterSectors
+      self.MinterStoragePath = /storage/TheMasterPixelMinter
+
+      if (self.account.borrow<&TheMasterPixelMinter>(from: self.MinterStoragePath) == nil && self.account.borrow<&TheMasterSectors>(from: self.CollectionStoragePath) == nil) {
+        self.account.save(<-create TheMasterPixelMinter(), to: self.MinterStoragePath)
+
+        self.account.save(<-self.createEmptySectors(), to: self.CollectionStoragePath)
+        self.account.link<&{TheMasterSectorsInterface}>(self.CollectionPublicPath, target: self.CollectionStoragePath)
+        self.account.link<&TheMasterSectors>(self.CollectionPrivatePath, target: self.CollectionStoragePath)
       }
   }
 
@@ -57,9 +72,10 @@ pub contract TheMasterPixelContract {
       }
 
       pub fun mintTheMasterPixel(theMasterSectorsRef: &TheMasterPixelContract.TheMasterSectors, ids: [UInt32], sector: UInt16, color: UInt32) {
-        for id in ids {
-          var newMasterPixel <- create TheMasterPixel(id: id)
-          theMasterSectorsRef.deposit(sectorId: sector,token: <-newMasterPixel, color: color)
+        var idx = 0;
+        while idx < 250 && idx < ids.length {
+          theMasterSectorsRef.deposit(sectorId: sector,token: <- create TheMasterPixel(id: ids[idx]), color: color)
+          idx = idx + 1;
         }
       }
   }
@@ -68,8 +84,8 @@ pub contract TheMasterPixelContract {
   // ########################################################################################
 
   pub resource TheMasterSector {
-    pub var ownedNFTs: @{UInt32: TheMasterPixel}
-    pub var colors: {UInt32: UInt32}
+    priv var ownedNFTs: @{UInt32: TheMasterPixel}
+    priv var colors: {UInt32: UInt32}
     pub var id: UInt16
 
     init (sectorId: UInt16) {
@@ -134,7 +150,7 @@ pub contract TheMasterPixelContract {
   }
 
   pub resource TheMasterSectors: TheMasterSectorsInterface {
-    pub var ownedSectors: @{UInt16: TheMasterSector}
+    priv var ownedSectors: @{UInt16: TheMasterSector}
 
     init () {
         self.ownedSectors <- {}

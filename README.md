@@ -36,3 +36,8 @@ They have to be deployed in the following order
 1. TheMasterPieceContract
 2. TheMasterPixelContract
 3. TheMasterMarketContract
+
+
+# License
+SPDX-FileCopyrightText: 2021 copyright 52a74d3b580cdb48eb87979860ca6efe <creator@themasterpiece.art>
+SPDX-License-Identifier: GPL-3.0-or-later

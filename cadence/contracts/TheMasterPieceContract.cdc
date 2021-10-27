@@ -1,4 +1,6 @@
 /**
+SPDX-FileCopyrightText: 2021 copyright 52a74d3b580cdb48eb87979860ca6efe <creator@themasterpiece.art>
+SPDX-License-Identifier: GPL-3.0-or-later
 
 ## `TheMasterPieceContract` contract
 
@@ -28,11 +30,19 @@ Exposes functions to query address references and pixel quantity owned by sector
 
 pub contract TheMasterPieceContract {
 
+  // Named Paths
+  pub let CollectionStoragePath: StoragePath
+  pub let CollectionPublicPath: PublicPath
+
   init() {
-      if (self.account.borrow<&TMPOwners>(from: /storage/TMPOwners) == nil) {
-        self.account.save(<-create TMPOwners(), to: /storage/TMPOwners)
-        self.account.link<&{TMPOwnersInterface}>(/public/TMPOwners, target: /storage/TMPOwners)
-      }
+    // Set our named paths
+    self.CollectionStoragePath = /storage/TMPOwners
+    self.CollectionPublicPath = /public/TMPOwners
+
+    if (self.account.borrow<&TMPOwners>(from: self.CollectionStoragePath) == nil) {
+      self.account.save(<-create TMPOwners(), to: self.CollectionStoragePath)
+      self.account.link<&{TMPOwnersInterface}>(self.CollectionPublicPath, target: self.CollectionStoragePath)
+    }
   }
 
   access(account) fun setSaleSize(sectorId: UInt16, address: Address, size: UInt16) {
@@ -70,7 +80,7 @@ pub contract TheMasterPieceContract {
   }
 
   pub resource TMPSectorOwners {
-    pub var owners: {Address: TMPOwner}
+    priv var owners: {Address: TMPOwner}
 
     init() {
       self.owners = {}
@@ -90,13 +100,13 @@ pub contract TheMasterPieceContract {
       }
     }
 
-    pub fun setWalletSize(address: Address, size: UInt16) {
+    access(contract) fun setWalletSize(address: Address, size: UInt16) {
       self.addOwner(address: address)
       (self.owners[address]!).setWalletSize(walletSize: size)
       self.removeOwner(address: address)
     }
 
-    pub fun setSaleSize(address: Address, size: UInt16) {
+    access(contract) fun setSaleSize(address: Address, size: UInt16) {
       (self.owners[address]!).setSaleSize(saleSize: size)
       self.removeOwner(address: address)
     }
@@ -120,13 +130,13 @@ pub contract TheMasterPieceContract {
   }
 
   pub resource TMPOwners: TMPOwnersInterface {
-    pub var sectors: @{UInt16: TMPSectorOwners}
+    priv var sectors: @{UInt16: TMPSectorOwners}
 
     init() {
         self.sectors <- {}
     }
 
-    pub fun setWalletSize(sectorId: UInt16, address: Address, size: UInt16) {
+    access(account) fun setWalletSize(sectorId: UInt16, address: Address, size: UInt16) {
       if self.sectors[sectorId] == nil {
           self.sectors[sectorId] <-! create TMPSectorOwners()
       }
@@ -134,7 +144,7 @@ pub contract TheMasterPieceContract {
       sectorRef.setWalletSize(address: address, size: size)
     }
 
-    pub fun setSaleSize(sectorId: UInt16, address: Address, size: UInt16) {
+    access(account) fun setSaleSize(sectorId: UInt16, address: Address, size: UInt16) {
       let sectorRef: &TMPSectorOwners = &self.sectors[sectorId] as &TMPSectorOwners
       sectorRef.setSaleSize(address: address, size: size)
     }

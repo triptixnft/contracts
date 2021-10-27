@@ -1,0 +1,29 @@
+{
+	"emulators": {
+		"default": {
+			"port": 3569,
+			"serviceAccount": "emulator-account"
+		}
+	},
+	"contracts": {
+		"TheMasterPieceContract": "./cadence/contracts/TheMasterPieceContract.cdc",
+		"TheMasterPixelContract": "./cadence/contracts/TheMasterPixelContract.cdc",
+		"TheMasterMarketContract": "./cadence/contracts/TheMasterMarketContract.cdc"
+	},
+	"networks": {
+		"emulator": "127.0.0.1:3569",
+		"mainnet": "access.mainnet.nodes.onflow.org:9000",
+		"testnet": "access.devnet.nodes.onflow.org:9000"
+	},
+	"accounts": {
+		"emulator-account": {
+			"address": "f8d6e0586b0a20c7",
+			"key": "068bcb7dbb95c41a7a5c2161ce841c39823dbe1663d64f600e79d7a294f5a3c1"
+		}
+	},
+	"deployments": {
+    "emulator": {
+      "emulator-account": ["TheMasterPieceContract", "TheMasterPixelContract", "TheMasterMarketContract"]
+    }
+  }
+}

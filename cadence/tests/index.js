@@ -14,7 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const main = async () => {
-  const basePath = path.resolve(__dirname, "./cadence");
+  const basePath = path.resolve(__dirname, "../");
   const port = 8080;
 
   // Init framework
